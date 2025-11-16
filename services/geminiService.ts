@@ -1,9 +1,29 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-export async function generateWallpapers(prompt: string): Promise<string[]> {
-  // 호출 시마다 새 클라이언트 인스턴스를 생성하여 최신 API 키를 사용합니다.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+export async function testApiKey(apiKey: string): Promise<boolean> {
+  if (!apiKey) return false;
+  const ai = new GoogleGenAI({ apiKey });
+  try {
+    // 앱의 주 기능인 이미지 생성을 테스트하여 키 권한까지 확인합니다.
+    await ai.models.generateImages({
+      model: 'imagen-4.0-generate-001',
+      prompt: 'test',
+      config: {
+        numberOfImages: 1,
+        aspectRatio: '1:1',
+      },
+    });
+    return true;
+  } catch (error) {
+    console.error("API Key test failed:", error);
+    return false;
+  }
+}
+
+export async function generateWallpapers(prompt: string, apiKey: string): Promise<string[]> {
+  // API 키를 인자로 받아 클라이언트를 생성합니다.
+  const ai = new GoogleGenAI({ apiKey });
 
   try {
     const response = await ai.models.generateImages({
